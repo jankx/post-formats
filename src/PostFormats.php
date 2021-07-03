@@ -43,13 +43,16 @@ class PostFormats
                 'chat'
             )
         ));
+
+        add_action('add_meta_boxes', array($this, 'registerPostFormatMetaDataBox'));
+        add_action('save_post', array($this, 'savePostFormatMetaData'), 10, 2);
     }
 
     public function loadFormatFeatures()
     {
         $post_formats     = array_get(get_theme_support('post-formats'), 0);
         $support_features = apply_filters('jankx_post_formats_format_features', array(
-            'video' => VideoFormat::class,
+            VideoFormat::FORMAT_NAME => VideoFormat::class,
         ));
 
         foreach ($support_features as $support_feature => $cls_feature) {
@@ -68,5 +71,28 @@ class PostFormats
                 ));
             }
         }
+    }
+
+    public function registerPostFormatMetaDataBox()
+    {
+        add_meta_box(
+            'jankx-post-format-metadata',
+            __('Post Format Data', 'jankx_post_formats'),
+            array($this, 'renderMetaDataBox'),
+            'post',
+            'side',
+            'high'
+        );
+    }
+
+    public function renderMetaDataBox($post)
+    {
+        ?>
+            <div id="jankx-post-formats"></div>
+        <?php
+    }
+
+    public function savePostFormatMetaData($post_id, $post) {
+
     }
 }

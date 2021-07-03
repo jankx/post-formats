@@ -1,9 +1,11 @@
 <?php
 namespace Jankx\PostFormats\Abstracts;
 
-abstract class Format
+use Jankx\PostFormats\Constracts\FormatConstract;
+
+abstract class Format implements FormatConstract
 {
-    public function loadFeature()
-    {
+    public function prepareFormatData() {
+        return apply_filters();
     }
 }

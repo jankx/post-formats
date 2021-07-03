@@ -5,8 +5,13 @@ use Jankx\PostFormats\Abstracts\Format;
 
 class VideoFormat extends Format
 {
-    public function __construct()
+    const FORMAT_NAME = 'video';
+
+    public function getName() {
+        return static::FORMAT_NAME;
+    }
+
+    public function loadFeature()
     {
-        die('zo');
     }
 }
