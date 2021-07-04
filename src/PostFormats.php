@@ -1,12 +1,16 @@
 <?php
 namespace Jankx\PostFormats;
 
+use WP_Post;
 use Jankx\PostFormats\Constracts\FormatConstract;
 use Jankx\PostFormats\Format\VideoFormat;
 
 class PostFormats
 {
+    const VERSION = '1.0.0.17';
+
     protected static $instance;
+    protected static $features;
 
     public static function get_instance()
     {
@@ -25,6 +29,9 @@ class PostFormats
     {
         add_action('init', array($this, 'init'));
         add_action('init', array($this, 'loadFormatFeatures'), 15);
+        if (wp_is_request('admin')) {
+            add_action('admin_enqueue_scripts', array($this, 'registerAdminScripts'), 50);
+        }
     }
 
     public function init()
@@ -63,6 +70,8 @@ class PostFormats
                     continue;
                 }
                 $feature->loadFeature();
+
+                static::$features[$feature->getName()] = $feature;
             } else {
                 error_log(sprintf(
                     'Feature "%s" is not loaded for post "%s" format',
@@ -92,7 +101,44 @@ class PostFormats
         <?php
     }
 
-    public function savePostFormatMetaData($post_id, $post) {
+    public function savePostFormatMetaData($post_id, $post)
+    {
+    }
 
+    public function registerAdminScripts()
+    {
+        $current_screen = get_current_screen();
+        if ('post' === $current_screen->id) {
+            global $post;
+            if (!is_a($post, WP_Post::class)) {
+                return;
+            }
+
+            $current_format = get_post_format($post);
+
+
+            wp_register_script(
+                'jankx-post-formats',
+                jankx_post_formats_asset_url('js/post-formats.js'),
+                array(),
+                static::VERSION,
+                true
+            );
+
+            wp_localize_script('jankx-post-formats', 'jankx_post_formats', apply_filters(
+                'jankx_post_formats',
+                array(
+                    'ID' => $post->ID,
+                    'current_format' => $current_format,
+                    'gutenberg_active' => method_exists($current_screen, 'is_block_editor')
+                        ? $current_screen->is_block_editor()
+                        : false,
+                    'data' => isset(static::$features[$current_format])
+                        ? static::$features[$current_format]->prepareFormatData()
+                        : array(),
+                )
+            ));
+            wp_enqueue_script('jankx-post-formats');
+        }
     }
 }

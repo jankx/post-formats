@@ -9,3 +9,11 @@ if (!defined('JANKX_POST_FORMATS_ROOT_DIR')) {
 if (class_exists(PostFormats::class)) {
     add_action('after_setup_theme', array(PostFormats::class, 'get_instance'));
 }
+
+function jankx_post_formats_asset_url($path = '') {
+    return sprintf(
+        '%s/assets/%s',
+        jankx_get_path_url(JANKX_POST_FORMATS_ROOT_DIR),
+        $path
+    );
+}
