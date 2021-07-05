@@ -4,6 +4,7 @@ namespace Jankx\PostFormats;
 use WP_Post;
 use Jankx\PostFormats\Constracts\FormatConstract;
 use Jankx\PostFormats\Format\VideoFormat;
+use Jankx\PostFormats\Integrations\Manager;
 
 class PostFormats
 {
@@ -29,6 +30,8 @@ class PostFormats
     {
         add_action('init', array($this, 'init'));
         add_action('init', array($this, 'loadFormatFeatures'), 15);
+        add_action('init', array(Manager::class, 'loadIntegrations'), 20);
+
         if (wp_is_request('admin')) {
             add_action('admin_enqueue_scripts', array($this, 'registerAdminScripts'));
         }
@@ -69,7 +72,9 @@ class PostFormats
                     error_log(sprintf('Feature "%s" is skipped', $cls_feature));
                     continue;
                 }
-                $feature->loadFeature();
+
+                // Load format bootstrap if needed
+                $feature->bootstrap();
 
                 static::$features[$feature->getName()] = $feature;
             } else {
@@ -79,6 +84,13 @@ class PostFormats
                     $support_feature
                 ));
             }
+        }
+    }
+
+    public static function getFeature($featureName)
+    {
+        if (isset(static::$features[$featureName])) {
+            return static::$features[$featureName];
         }
     }
 
@@ -187,5 +199,9 @@ class PostFormats
             ));
             wp_enqueue_script('jankx-post-formats');
         }
+    }
+
+    public function loadIntegrations()
+    {
     }
 }

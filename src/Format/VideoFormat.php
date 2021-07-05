@@ -1,7 +1,9 @@
 <?php
 namespace Jankx\PostFormats\Format;
 
+use Jankx;
 use Jankx\PostFormats\Abstracts\Format;
+use Jankx\Template\Template;
 
 class VideoFormat extends Format
 {
@@ -12,8 +14,20 @@ class VideoFormat extends Format
         return static::FORMAT_NAME;
     }
 
-    public function loadFeature()
+    public function makeVideoOverlay($post)
     {
+        $engine = Template::getEngine(Jankx::ENGINE_ID);
+        if ($engine->searchTemplate('video-overlay')) {
+            $engine->render('video-overlay');
+        } else {
+            ?>
+            <div class="jankx-overlay">
+                <a href="<?php echo $post->permalink(); ?>" title="<?php echo $post->title; ?>">
+                    <span class="dmx dmx-youtube-play"></span>
+                </a>
+            </div>
+            <?php
+        }
     }
 
     public function prepareFormatData($post)
