@@ -7,7 +7,7 @@ use Jankx\PostFormats\Format\VideoFormat;
 
 class PostFormats
 {
-    const VERSION = '1.0.0.17';
+    const VERSION = '1.0.0.40';
 
     protected static $instance;
     protected static $features;
@@ -30,7 +30,7 @@ class PostFormats
         add_action('init', array($this, 'init'));
         add_action('init', array($this, 'loadFormatFeatures'), 15);
         if (wp_is_request('admin')) {
-            add_action('admin_enqueue_scripts', array($this, 'registerAdminScripts'), 50);
+            add_action('admin_enqueue_scripts', array($this, 'registerAdminScripts'));
         }
     }
 
@@ -103,6 +103,49 @@ class PostFormats
 
     public function savePostFormatMetaData($post_id, $post)
     {
+        if (isset($_POST['jankx_post_format'])) {
+            $type = array_get($_POST['jankx_post_format'], 'type');
+            if (!$type || !isset(static::$features[$type])) {
+                return error_log(sprintf('Post format "%s" is invalid format', $type));
+            }
+
+            static::$features[$type]->save(
+                $post_id,
+                array_get($_POST['jankx_post_format'], $type, array())
+            );
+        }
+    }
+
+    protected function getPostFormatTemplates()
+    {
+        $post_formats = get_theme_support('post-formats');
+        $templates = array();
+
+        foreach (array_get($post_formats, 0) as $post_format) {
+            if (!isset(static::$features[$post_format])) {
+                $templates[$post_format] = false;
+                continue;
+            }
+            $templates[$post_format] = static::$features[$post_format]->getMetaDataTemplate();
+        }
+
+        return $templates;
+    }
+
+    public function getPostFormatDefaultValues()
+    {
+        $post_formats = get_theme_support('post-formats');
+        $defaultValues = array();
+
+        foreach (array_get($post_formats, 0) as $post_format) {
+            if (!isset(static::$features[$post_format])) {
+                $defaultValues[$post_format] = new \stdClass();
+                continue;
+            }
+            $defaultValues[$post_format] = static::$features[$post_format]->defaultValues();
+        }
+
+        return $defaultValues;
     }
 
     public function registerAdminScripts()
@@ -115,12 +158,16 @@ class PostFormats
             }
 
             $current_format = get_post_format($post);
+            $current_data = isset(static::$features[$current_format])
+            ? (object) static::$features[$current_format]->prepareFormatData($post)
+            : new \stdClass();
 
-
+            wp_register_script('jankx-core', jankx_core_asset_url('js/core.js'), array(), static::VERSION, true);
+            wp_register_script('tim', jankx_core_asset_url('libs/tim/tinytim.js'), array(), '1.0.0', true);
             wp_register_script(
                 'jankx-post-formats',
                 jankx_post_formats_asset_url('js/post-formats.js'),
-                array(),
+                array('jankx-core', 'tim'),
                 static::VERSION,
                 true
             );
@@ -130,12 +177,12 @@ class PostFormats
                 array(
                     'ID' => $post->ID,
                     'current_format' => $current_format,
-                    'gutenberg_active' => method_exists($current_screen, 'is_block_editor')
+                    'is_block_editor' => method_exists($current_screen, 'is_block_editor')
                         ? $current_screen->is_block_editor()
                         : false,
-                    'data' => isset(static::$features[$current_format])
-                        ? static::$features[$current_format]->prepareFormatData()
-                        : array(),
+                    'data' => $current_data,
+                    'templates' => $this->getPostFormatTemplates(),
+                    'default_values' => $this->getPostFormatDefaultValues()
                 )
             ));
             wp_enqueue_script('jankx-post-formats');
