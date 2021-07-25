@@ -95,15 +95,26 @@ class PostFormats
         }
     }
 
+    public function get_suport_post_types()
+    {
+        $post_types = get_post_types();
+
+        return array_filter(
+            array_keys($post_types),
+            function ($post_type) {
+                return post_type_supports($post_type, 'post-formats');
+            }
+        );
+    }
+
     public function registerPostFormatMetaDataBox()
     {
         add_meta_box(
             'jankx-post-format-metadata',
             __('Post Format Data', 'jankx_post_formats'),
             array($this, 'renderMetaDataBox'),
-            'post',
-            'side',
-            'high'
+            $this->get_suport_post_types(),
+            'side'
         );
     }
 
