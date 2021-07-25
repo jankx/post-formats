@@ -5,6 +5,7 @@ use WP_Post;
 use Jankx\PostFormats\Constracts\FormatConstract;
 use Jankx\PostFormats\Format\VideoFormat;
 use Jankx\PostFormats\Integrations\Manager;
+use Jankx\Asset\AssetManager;
 
 class PostFormats
 {
@@ -163,7 +164,7 @@ class PostFormats
     public function registerAdminScripts()
     {
         $current_screen = get_current_screen();
-        if ('post' === $current_screen->id) {
+        if ('post' === $current_screen->base && post_type_supports($current_screen->id, 'post-formats')) {
             global $post;
             if (!is_a($post, WP_Post::class)) {
                 return;
@@ -174,12 +175,12 @@ class PostFormats
             ? (object) static::$features[$current_format]->prepareFormatData($post)
             : new \stdClass();
 
-            wp_register_script('jankx-core', jankx_core_asset_url('js/core.js'), array(), static::VERSION, true);
+            wp_register_script('jankx-common', AssetManager::get_asset_url('public/js/common.js'), array(), static::VERSION, true);
             wp_register_script('tim', jankx_core_asset_url('libs/tim/tinytim.js'), array(), '1.0.0', true);
             wp_register_script(
                 'jankx-post-formats',
                 jankx_post_formats_asset_url('js/post-formats.js'),
-                array('jankx-core', 'tim'),
+                array('jankx-common', 'tim'),
                 static::VERSION,
                 true
             );

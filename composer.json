@@ -11,7 +11,8 @@
     }
   ],
   "require": {
-    "jankx/helpers": "*"
+    "jankx/helpers": "*",
+    "jankx/asset": "*"
   },
   "autoload": {
     "psr-4": {
