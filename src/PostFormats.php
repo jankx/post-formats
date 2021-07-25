@@ -43,15 +43,7 @@ class PostFormats
         add_theme_support('post-formats', apply_filters(
             'jankx_post_formats_allow_types',
             array(
-                'aside',
-                'gallery',
-                'link',
-                'image',
-                'quote',
-                'status',
-                'video',
-                'audio',
-                'chat'
+                'video'
             )
         ));
 
