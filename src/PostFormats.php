@@ -9,7 +9,7 @@ use Jankx\Asset\AssetManager;
 
 class PostFormats
 {
-    const VERSION = '1.0.0.40';
+    const VERSION = '1.0.0.42';
 
     protected static $instance;
     protected static $features;

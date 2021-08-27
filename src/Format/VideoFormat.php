@@ -3,7 +3,7 @@ namespace Jankx\PostFormats\Format;
 
 use Jankx;
 use Jankx\PostFormats\Abstracts\Format;
-use Jankx\Template\Template;
+use Jankx\TemplateLoader;
 
 class VideoFormat extends Format
 {
@@ -14,20 +14,33 @@ class VideoFormat extends Format
         return static::FORMAT_NAME;
     }
 
-    public function makeVideoOverlay($post)
+    public function makeVideoOverlay($post, $data_index = null)
     {
-        $engine = Template::getEngine(Jankx::ENGINE_ID);
-        if ($engine->searchTemplate('video-overlay')) {
-            $engine->render('video-overlay');
-        } else {
-            ?>
-            <div class="jankx-overlay">
-                <a href="<?php echo $post->permalink(); ?>" title="<?php echo $post->title; ?>">
-                    <span class="dmx dmx-youtube-play"></span>
-                </a>
-            </div>
-            <?php
+        $jankx_post_format = get_post_meta($post->ID, 'jankx_post_format', true);
+        $video_data = array_get($jankx_post_format, 'video');
+        $video_url = array_get($video_data, 'url');
+        $engine = TemplateLoader::getTemplateEngine();
+        if (empty($video_url) || !$engine) {
+            return;
         }
+
+        $attributes = array(
+            'class' => array('overlay', 'video-overlay', 'has-lightbox'),
+            'data-src' => $video_url,
+        );
+        if (!is_null($data_index)) {
+            $attributes['data-gallery-index'] = intval($data_index);
+        }
+
+        echo sprintf(
+            '<div %s>',
+            jankx_generate_html_attributes(apply_filters(
+                'jankx/layout/post/format/video/overlay/attributes',
+                $attributes
+            ))
+        );
+        $engine->render('video-overlay');
+        echo '</div>';
     }
 
     public function prepareFormatData($post)
