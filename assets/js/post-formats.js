@@ -3,8 +3,7 @@ var j = window.jankx_post_formats;
 function jankx_post_formats_toogle_metadata(target, format, data = {}) {
     // Render current format after DOM loaded
     var parentWrap = target.findParent('#jankx-post-format-metadata');
-
-    if (format && j.templates[format] !== false && ['standard', 0].indexOf(format) < 0) {
+    if (format && j.templates[format] !== false && ['standard', '0', 0].indexOf(format) < 0) {
         var prepareData = typeof j.default_values[format] === 'object'
                 ? Object.assign(j.default_values[format], j.data)
                 : data;
