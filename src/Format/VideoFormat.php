@@ -19,7 +19,12 @@ class VideoFormat extends Format
         $jankx_post_format = get_post_meta($post->ID, 'jankx_post_format', true);
         $video_data = array_get($jankx_post_format, 'video');
         $video_url = array_get($video_data, 'url');
-        $engine = TemplateLoader::getTemplateEngine();
+        $engine = $this->templateEngine;
+
+        if (!$engine && class_exists(TemplateLoader::class)) {
+            $engine = TemplateLoader::getTemplateEngine();
+        }
+
         if (empty($video_url) || !$engine) {
             return;
         }

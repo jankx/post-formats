@@ -7,6 +7,8 @@ abstract class Format implements FormatConstract
 {
     protected static $cachedFormats = array();
 
+    protected $templateEngine;
+
     public function bootstrap()
     {
     }
@@ -32,5 +34,11 @@ abstract class Format implements FormatConstract
     public function defaultValues()
     {
         return array();
+    }
+
+    public function setTemplateEngine($templateEngine) {
+        if (is_a($templateEngine, Engine::class)) {
+            $this->templateEngine = &$templateEngine;
+        }
     }
 }
