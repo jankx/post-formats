@@ -3,7 +3,7 @@ namespace Jankx\PostFormats\Format;
 
 use Jankx;
 use Jankx\PostFormats\Abstracts\Format;
-use Jankx\TemplateLoader;
+use Jankx\TemplateAndLayout;
 
 class VideoFormat extends Format
 {
@@ -21,8 +21,8 @@ class VideoFormat extends Format
         $video_url = array_get($video_data, 'url');
         $engine = $this->templateEngine;
 
-        if (!$engine && class_exists(TemplateLoader::class)) {
-            $engine = TemplateLoader::getTemplateEngine();
+        if (!$engine && class_exists(TemplateAndLayout::class)) {
+            $engine = TemplateAndLayout::getTemplateEngine();
         }
 
         if (empty($video_url) || !$engine) {
