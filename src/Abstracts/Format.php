@@ -16,6 +16,9 @@ abstract class Format implements FormatConstract
     public static function getFormat($post)
     {
         $post = get_post($post->post);
+        if (!$post) {
+            return false;
+        }
 
         if (isset(self::$cachedFormats[$post->ID])) {
             return self::$cachedFormats[$post->ID];
